@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Calculadora Combinada – Clinipay</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#fff; --text:#111; --muted:#6b7280;
+    --border:#e5e7eb; --pill:#f3f4f6; --ok:#059669; --bad:#e11d48; --link:#2563eb;
+    --shadow: 0 8px 20px rgba(0,0,0,.06);
+    --radius: 16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  .wrap{max-width:1120px;margin:32px auto;padding:0 16px}
+  h1{font-size:24px;margin:0 0 8px}
+  p.lead{color:var(--muted);margin:0 0 20px}
+  .grid{display:grid;gap:20px}
+  @media(min-width:920px){ .grid.md-2{grid-template-columns:1fr 1fr} .grid.md-3{grid-template-columns:1fr 1fr 1fr}}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+  .card .head{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}
+  .card h3{font-size:16px;margin:0}
+  .badge{font-size:11px;background:var(--pill);padding:4px 8px;border-radius:999px;color:#111}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{color:#374151;font-size:13px}
+  .row{display:grid;gap:14px}
+  @media(min-width:720px){ .row.cols-2{grid-template-columns:1fr 1fr} .row.cols-3{grid-template-columns:1fr 1fr 1fr}}
+  input,select,button{font:inherit}
+  input[type="number"], select{
+    border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff;width:100%
+  }
+  .kv{display:flex;justify-content:space-between;gap:10px}
+  .kv + .kv{margin-top:6px}
+  hr{border:none;border-top:1px solid var(--border);margin:10px 0}
+  .center{text-align:center}
+  .save-ok{color:var(--ok)} .save-bad{color:var(--bad)}
+  .actions{display:flex;gap:8px;align-items:center}
+  .link{color:var(--link);cursor:pointer;background:none;border:none;padding:0}
+  .help{color:var(--muted);font-size:12px;margin-top:8px}
+  .ranges-head{display:grid;grid-template-columns:80px 1fr 1fr 1fr 80px;gap:8px;color:var(--muted);font-size:12px;margin-bottom:6px}
+  .range-row{display:grid;grid-template-columns:80px 1fr 1fr 1fr 80px;gap:8px;align-items:center}
+  .pill{background:var(--pill);border-radius:999px;padding:2px 8px;font-size:12px;color:#555;display:inline-block}
+  .muted{color:var(--muted)}
+  .footnote{margin-top:14px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Calculadora Combinada – Vendas + Comparador Clinipay</h1>
+    <p class="lead">Simule taxas, custos operacionais e compare o custo total atual vs. Clinicorp + Clinipay. Ajuste as MDRs conforme sua tabela.</p>
+
+    <div class="grid md-2">
+      <!-- Dados da Venda -->
+      <div class="card">
+        <div class="head">
+          <h3>Dados da Venda</h3><span class="badge">Entrada</span>
+        </div>
+        <div class="row cols-2">
+          <div class="field">
+            <label for="saleAmount">Valor da venda (R$)</label>
+            <input id="saleAmount" type="number" step="1" value="20000" />
+          </div>
+          <div class="field">
+            <label for="modality">Modalidade</label>
+            <select id="modality">
+              <option value="debito">Débito</option>
+              <option value="credito_avista">Crédito à Vista</option>
+              <option value="credito_parcelado" selected>Crédito Parcelado</option>
+            </select>
+          </div>
+
+          <div class="field" id="installmentsField">
+            <label for="installments">Número de parcelas <span class="muted" id="parcRangeHint">(2 a 21)</span></label>
+            <input id="installments" type="number" step="1" min="2" max="21" value="10" />
+          </div>
+
+          <div class="field">
+            <label for="plan">Plano para comparar</label>
+            <select id="plan">
+              <option value="standard" selected>Standard</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custos da Operação Atual -->
+      <div class="card">
+        <div class="head">
+          <h3>Custos da Operação Atual</h3><span class="badge">Entrada</span>
+        </div>
+        <div class="row cols-3">
+          <div class="field">
+            <label for="manualHours">Tempo de conciliação (h/mês)</label>
+            <input id="manualHours" type="number" step="1" value="10" />
+          </div>
+          <div class="field">
+            <label for="salary">Salário do responsável (R$)</label>
+            <input id="salary" type="number" step="1" value="3000" />
+          </div>
+          <div class="field">
+            <label for="erpCurrent">Custo mensal do ERP atual (R$)</label>
+            <input id="erpCurrent" type="number" step="1" value="199.9" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Taxas -->
+    <div class="grid md-2" style="margin-top:20px">
+      <div class="card">
+        <div class="head">
+          <h3>Taxas MDR – Solução Atual</h3><span class="badge">Editável</span>
+        </div>
+        <div class="row cols-3">
+          <div class="field">
+            <label for="mdrDebitoAtual">Débito (%)</label>
+            <input id="mdrDebitoAtual" type="number" step="0.01" value="1.5" />
+          </div>
+          <div class="field">
+            <label for="mdrCreditoAvistaAtual">Crédito à vista (%)</label>
+            <input id="mdrCreditoAvistaAtual" type="number" step="0.01" value="3.19" />
+          </div>
+          <div class="field">
+            <label for="mdrCreditoParceladoAtual">Crédito parcelado (%)</label>
+            <input id="mdrCreditoParceladoAtual" type="number" step="0.01" value="5.49" />
+          </div>
+        </div>
+        <div class="help">Nesta versão, o percentual de parcelado da solução atual é único (independente do número de parcelas).</div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <h3>Taxas MDR – Clinipay <span id="planLabel" class="pill">Standard</span></h3>
+          <span class="badge">Editável</span>
+        </div>
+
+        <div class="row cols-2" style="margin-bottom:12px">
+          <div class="field">
+            <label for="mdrDebitoPlan">Débito (%)</label>
+            <input id="mdrDebitoPlan" type="number" step="0.01" value="1.39" />
+          </div>
+          <div class="field">
+            <label for="mdrAvistaPlan">Crédito à vista (%)</label>
+            <input id="mdrAvistaPlan" type="number" step="0.01" value="2.89" />
+          </div>
+        </div>
+
+        <div class="actions" style="margin-bottom:8px">
+          <h4 style="margin:0;font-size:14px">Faixas para Crédito Parcelado</h4>
+          <button class="link" id="addRangeBtn">Adicionar faixa</button>
+        </div>
+
+        <div class="ranges-head">
+          <span></span><span>De</span><span>Até</span><span>Taxa %</span><span></span>
+        </div>
+        <div id="rangesContainer" class="space"></div>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="grid md-3" style="margin-top:20px">
+      <div class="card">
+        <div class="head"><h3>Sem Clinicorp + Clinipay (Atual)</h3><span class="badge">Resultado</span></div>
+        <div class="kv"><span>MDR (%)</span><span id="mdrPercentAtual">0%</span></div>
+        <div class="kv"><span>MDR (R$)</span><span id="mdrFeeAtual">R$ 0,00</span></div>
+        <div class="kv"><span>Valor líquido da venda</span><span id="netSaleAtual">R$ 0,00</span></div>
+        <div class="kv"><span>Custo de conciliação</span><span id="reconAtual">R$ 0,00</span></div>
+        <div class="kv"><span>ERP mensal</span><span id="erpAtualOut">R$ 0,00</span></div>
+        <hr/>
+        <div class="kv" style="font-weight:700"><span>Total atual</span><span id="totalAtual">R$ 0,00</span></div>
+      </div>
+
+      <div class="card">
+        <div class="head"><h3>Clinicorp + Clinipay (<span id="planLabel2">Standard</span>)</h3><span class="badge">Resultado</span></div>
+        <div class="kv"><span>MDR (%)</span><span id="mdrPercentClinipay">0%</span></div>
+        <div class="kv"><span>MDR (R$)</span><span id="mdrFeeClinipay">R$ 0,00</span></div>
+        <div class="kv"><span>Valor líquido da venda</span><span id="netSaleClinipay">R$ 0,00</span></div>
+        <div class="kv"><span>ERP mensal</span><span id="erpClinipay">R$ 0,00</span></div>
+        <div class="kv"><span>Aluguel POS</span><span id="posRent">R$ 0,00</span></div>
+        <hr/>
+        <div class="kv" style="font-weight:700"><span>Total Clinipay</span><span id="totalClinipay">R$ 0,00</span></div>
+      </div>
+
+      <div class="card center">
+        <div id="saveTitle" class="save-ok" style="font-size:24px;font-weight:900">Você economiza</div>
+        <div id="saveValue" style="font-size:34px;font-weight:900;margin-top:6px">R$ 0,00</div>
+        <div class="help" id="saveNote">Com base nas entradas e nas taxas configuradas para o plano Standard.</div>
+      </div>
+    </div>
+
+    <div class="footnote">
+      Regras comerciais fixas: Plano Standard = <span id="stdPrice"></span>/mês; Plano Premium = <span id="prmPrice"></span>/mês; Aluguel POS = <span id="posPrice"></span> (isento se faturamento &gt; <span id="waiver"></span> no mês).
+      <br/>Observação: As taxas MDR da Clinipay variam por modalidade e faixas de parcelamento. Ajuste conforme a tabela oficial.
+    </div>
+  </div>
+
+<script>
+(function(){
+  // ---------- Helpers ----------
+  const brlFmt = new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
+  const brl = (v)=> brlFmt.format(isFinite(v)? v : 0);
+  const num = (v)=> { const n = parseFloat(v); return isFinite(n)? n : 0; };
+  const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
+  const rid = ()=> 'r'+Math.random().toString(36).slice(2,9);
+
+  // ---------- Constants ----------
+  const PLAN_COST = { standard:149.9, premium:349.9 };
+  const POS_RENT = 69.9;
+  const POS_WAIVER_THRESHOLD = 10000;
+
+  // ---------- State ----------
+  const state = {
+    saleAmount: 20000,
+    modality: "credito_parcelado",
+    installments: 10,
+    manualHours: 10,
+    salary: 3000,
+    erpCurrent: 199.9,
+    plan: "standard",
+
+    // MDR atual (cliente)
+    mdrDebitoAtual: 1.5,
+    mdrCreditoAvistaAtual: 3.19,
+    mdrCreditoParceladoAtual: 5.49,
+
+    // MDR Clinipay por plano
+    mdr: {
+      standard: {
+        debito: 1.39,
+        avista: 2.89,
+        parcel: [
+          { id:"r1", min:2, max:6, rate:4.19 },
+          { id:"r2", min:7, max:12, rate:5.49 },
+          { id:"r3", min:13, max:18, rate:6.29 },
+          { id:"r4", min:19, max:24, rate:7.19 },
+        ]
+      },
+      premium: {
+        debito: 1.25,
+        avista: 2.59,
+        parcel: [
+          { id:"r1", min:2, max:6, rate:3.79 },
+          { id:"r2", min:7, max:12, rate:4.99 },
+          { id:"r3", min:13, max:18, rate:5.79 },
+          { id:"r4", min:19, max:24, rate:6.59 },
+        ]
+      }
+    }
+  };
+
+  // ---------- DOM ----------
+  const el = (id)=> document.getElementById(id);
+  const saleAmount = el("saleAmount");
+  const modality = el("modality");
+  const installments = el("installments");
+  const installmentsField = el("installmentsField");
+  const parcRangeHint = el("parcRangeHint");
+  const plan = el("plan");
+
+  const mdrDebitoAtual = el("mdrDebitoAtual");
+  const mdrCreditoAvistaAtual = el("mdrCreditoAvistaAtual");
+  const mdrCreditoParceladoAtual = el("mdrCreditoParceladoAtual");
+
+  const mdrDebitoPlan = el("mdrDebitoPlan");
+  const mdrAvistaPlan = el("mdrAvistaPlan");
+  const rangesContainer = el("rangesContainer");
+  const addRangeBtn = el("addRangeBtn");
+
+  const manualHours = el("manualHours");
+  const salary = el("salary");
+  const erpCurrent = el("erpCurrent");
+
+  const mdrPercentAtual = el("mdrPercentAtual");
+  const mdrFeeAtual = el("mdrFeeAtual");
+  const netSaleAtual = el("netSaleAtual");
+  const reconAtual = el("reconAtual");
+  const erpAtualOut = el("erpAtualOut");
+  const totalAtual = el("totalAtual");
+
+  const mdrPercentClinipay = el("mdrPercentClinipay");
+  const mdrFeeClinipay = el("mdrFeeClinipay");
+  const netSaleClinipay = el("netSaleClinipay");
+  const erpClinipay = el("erpClinipay");
+  const posRent = el("posRent");
+  const totalClinipay = el("totalClinipay");
+
+  const planLabel = el("planLabel");
+  const planLabel2 = el("planLabel2");
+  const saveTitle = el("saveTitle");
+  const saveValue = el("saveValue");
+  const saveNote = el("saveNote");
+
+  const stdPrice = el("stdPrice");
+  const prmPrice = el("prmPrice");
+  const posPrice = el("posPrice");
+  const waiver = el("waiver");
+
+  // Static footnote numbers
+  stdPrice.textContent = brl(PLAN_COST.standard);
+  prmPrice.textContent = brl(PLAN_COST.premium);
+  posPrice.textContent = brl(POS_RENT);
+  waiver.textContent = brl(POS_WAIVER_THRESHOLD);
+
+  // ---------- Logic ----------
+  const maxInstallments = ()=> state.plan === "premium" ? 24 : 21;
+  const isParcelado = ()=> state.modality === "credito_parcelado";
+
+  function findParcelRate(ranges, n){
+    for(const r of ranges){ if(n>=r.min && n<=r.max) return r.rate; }
+    return ranges.length ? ranges[ranges.length-1].rate : 0;
+  }
+
+  function recalc(){
+    // constraints
+    const maxParc = maxInstallments();
+    if(isParcelado()){
+      installmentsField.style.display = "";
+      parcRangeHint.textContent = `(2 a ${maxParc})`;
+      const clamped = clamp(Math.floor(state.installments||2), 2, maxParc);
+      if(clamped !== state.installments){
+        state.installments = clamped;
+        installments.value = String(clamped);
+      }
+    } else {
+      installmentsField.style.display = "none";
+    }
+
+    // Labels
+    const planText = state.plan === "standard" ? "Standard" : "Premium";
+    planLabel.textContent = planText;
+    planLabel2.textContent = planText;
+    saveNote.textContent = `Com base nas entradas e nas taxas configuradas para o plano ${planText}.`;
+
+    // A. Atual
+    let mdrPercentA = 0;
+    if(state.modality === "debito") mdrPercentA = state.mdrDebitoAtual;
+    else if(state.modality === "credito_avista") mdrPercentA = state.mdrCreditoAvistaAtual;
+    else mdrPercentA = state.mdrCreditoParceladoAtual;
+
+    const mdrFeeA = state.saleAmount * (mdrPercentA/100);
+    const netA = state.saleAmount - mdrFeeA;
+    const reconA = (state.salary/220) * state.manualHours;
+    const totalA = mdrFeeA + reconA + state.erpCurrent;
+
+    // B. Clinipay
+    const table = state.mdr[state.plan];
+    const mdrPercentB = (state.modality === "debito") ? table.debito
+                         : (state.modality === "credito_avista") ? table.avista
+                         : findParcelRate(table.parcel, state.installments);
+    const mdrFeeB = state.saleAmount * (mdrPercentB/100);
+    const netB = state.saleAmount - mdrFeeB;
+    const erpB = PLAN_COST[state.plan];
+    const posB = state.saleAmount > POS_WAIVER_THRESHOLD ? 0 : POS_RENT;
+    const totalB = mdrFeeB + erpB + posB;
+
+    const savings = totalA - totalB;
+
+    // Paint
+    mdrPercentAtual.textContent = `${mdrPercentA.toFixed(2)}%`;
+    mdrFeeAtual.textContent = brl(mdrFeeA);
+    netSaleAtual.textContent = brl(netA);
+    reconAtual.textContent = brl(reconA);
+    erpAtualOut.textContent = brl(state.erpCurrent);
+    totalAtual.textContent = brl(totalA);
+
+    mdrPercentClinipay.textContent = `${mdrPercentB.toFixed(2)}%`;
+    mdrFeeClinipay.textContent = brl(mdrFeeB);
+    netSaleClinipay.textContent = brl(netB);
+    erpClinipay.textContent = brl(erpB);
+    posRent.textContent = brl(posB);
+    totalClinipay.textContent = brl(totalB);
+
+    if(savings >= 0){
+      saveTitle.textContent = "Você economiza";
+      saveTitle.classList.remove("save-bad"); saveTitle.classList.add("save-ok");
+    } else {
+      saveTitle.textContent = "Diferença";
+      saveTitle.classList.remove("save-ok"); saveTitle.classList.add("save-bad");
+    }
+    saveValue.textContent = brl(Math.abs(savings));
+  }
+
+  // ---------- Ranges UI ----------
+  function renderRanges(){
+    rangesContainer.innerHTML = "";
+    const arr = state.mdr[state.plan].parcel;
+
+    arr.forEach((r, idx)=>{
+      const row = document.createElement("div");
+      row.className = "range-row";
+
+      const label = document.createElement("span");
+      label.className = "muted";
+      label.textContent = "Parcelado";
+
+      const min = document.createElement("input");
+      min.type = "number"; min.step = "1"; min.value = r.min;
+      min.addEventListener("input", ()=>{
+        r.min = clamp(Math.floor(num(min.value)), 2, 24);
+        min.value = String(r.min);
+        if(r.min > r.max){ r.max = r.min; }
+        renderRanges(); recalc();
+      });
+
+      const max = document.createElement("input");
+      max.type = "number"; max.step = "1"; max.value = r.max;
+      max.addEventListener("input", ()=>{
+        r.max = clamp(Math.floor(num(max.value)), 2, 24);
+        max.value = String(r.max);
+        if(r.max < r.min){ r.min = r.max; }
+        renderRanges(); recalc();
+      });
+
+      const rate = document.createElement("input");
+      rate.type = "number"; rate.step = "0.01"; rate.value = r.rate;
+      rate.addEventListener("input", ()=>{
+        r.rate = num(rate.value);
+        recalc();
+      });
+
+      const del = document.createElement("button");
+      del.className = "link";
+      del.textContent = "Remover";
+      del.addEventListener("click", ()=>{
+        arr.splice(idx,1);
+        renderRanges(); recalc();
+      });
+
+      row.appendChild(label);
+      row.appendChild(min);
+      row.appendChild(max);
+      row.appendChild(rate);
+      row.appendChild(del);
+
+      rangesContainer.appendChild(row);
+    });
+  }
+
+  // ---------- Wire inputs ----------
+  function bindNumber(node, key, post=()=>{}){
+    node.addEventListener("input", ()=>{ state[key] = num(node.value); post(); recalc(); });
+  }
+  function bindSelect(node, key, post=()=>{}){
+    node.addEventListener("change", ()=>{ state[key] = node.value; post(); recalc(); });
+  }
+
+  bindNumber(saleAmount, "saleAmount");
+  bindSelect(modality, "modality");
+  bindNumber(installments, "installments");
+  bindNumber(manualHours, "manualHours");
+  bindNumber(salary, "salary");
+  bindNumber(erpCurrent, "erpCurrent");
+
+  // plano -> troca labels, limites e carrega taxas do plano
+  bindSelect(plan, "plan", ()=>{
+    const p = state.plan;
+    const tbl = state.mdr[p];
+    mdrDebitoPlan.value = tbl.debito;
+    mdrAvistaPlan.value = tbl.avista;
+    installments.max = String(maxInstallments());
+    renderRanges();
+  });
+
+  // MDR atual
+  bindNumber(mdrDebitoAtual, "mdrDebitoAtual");
+  bindNumber(mdrCreditoAvistaAtual, "mdrCreditoAvistaAtual");
+  bindNumber(mdrCreditoParceladoAtual, "mdrCreditoParceladoAtual");
+
+  // MDR por plano (inputs editam o plano atual)
+  mdrDebitoPlan.addEventListener("input", ()=>{
+    state.mdr[state.plan].debito = num(mdrDebitoPlan.value); recalc();
+  });
+  mdrAvistaPlan.addEventListener("input", ()=>{
+    state.mdr[state.plan].avista = num(mdrAvistaPlan.value); recalc();
+  });
+
+  addRangeBtn.addEventListener("click", ()=>{
+    state.mdr[state.plan].parcel.push({ id:rid(), min:2, max:6, rate:5 });
+    renderRanges(); recalc();
+  });
+
+  // ---------- Init ----------
+  renderRanges();
+  recalc();
+})();
+</script>
+</body>
+</html>
